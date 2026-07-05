@@ -113,6 +113,12 @@ edge-tts (Microsoft) completes in ~3s total vs Zonos taking much longer.
   - [ ] Use TensorRT-ONNX export for inference
   - [ ] Batch multiple short sentences instead of one long one
 - [ ] Improve Zonos Japanese voice clarity (currently lower quality than English)
+- [ ] Try other local voice cloning models as alternatives:
+  - [ ] **GPT-SoVITS** — very fast, good quality, popular for anime/voice cloning
+  - [ ] **OpenVoice** — instant voice cloning, multiple languages
+  - [ ] **Fish Speech** — fast, multilingual, open source
+  - [ ] **Parler TTS** — descriptive TTS with style control
+  - [ ] **MeloTTS** — fast, multilingual, lightweight
 
 ## License
 
