@@ -105,6 +105,13 @@ edge-tts (Microsoft) completes in ~3s total vs Zonos taking much longer.
 
 - [ ] Set up F5-TTS
 - [ ] Improve Zonos generation speed (currently slow on consumer GPUs)
+  - [ ] Try `torch.compile` mode with `mode="reduce-overhead"` or `mode="max-autotune"`
+  - [ ] Use half-precision (FP16/BF16) instead of FP32
+  - [ ] Enable CUDA graph capture for repeated generation
+  - [ ] Reduce `max_new_tokens` limit if not needed
+  - [ ] Try the hybrid model (Zonos-v0.1-hybrid) — may be faster than transformer
+  - [ ] Use TensorRT-ONNX export for inference
+  - [ ] Batch multiple short sentences instead of one long one
 - [ ] Improve Zonos Japanese voice clarity (currently lower quality than English)
 
 ## License
