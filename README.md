@@ -63,6 +63,16 @@ The source reference audio is `49800b87-fe13-47ec-93bd-361e274c39fc.mp3`, extrac
 - `alex_zonos_output_ja.wav` — Zonos clone (Japanese)
 - `alex_output.wav` — XTTS clone
 
+## Fast TTS Comparison
+
+For speed comparison, run:
+```powershell
+pip install edge-tts
+python tts_benchmark.py
+```
+
+edge-tts (Microsoft) completes in ~3s total vs Zonos taking much longer.
+
 ## TODO
 
 - [ ] Improve generation speed (currently slow on consumer GPUs)
