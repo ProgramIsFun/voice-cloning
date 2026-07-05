@@ -114,13 +114,13 @@ def main():
         print("  2. Then re-run this script")
         sys.exit(1)
 
-    print(f"\n[1/6] Loading Zonos transformer model on {device}...")
+    print(f"\n[1/7] Loading Zonos transformer model on {device}...")
     print("      (First run will download model weights from HuggingFace)")
     t0 = time.time()
     model = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\n[2/6] Loading reference audio: {REFERENCE_AUDIO}")
+    print(f"\n[2/7] Loading reference audio: {REFERENCE_AUDIO}")
     t0 = time.time()
     wav, sampling_rate = torchaudio.load(REFERENCE_AUDIO)
     print(f"  -> Done in {time.time()-t0:.1f}s")
@@ -129,12 +129,12 @@ def main():
     cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_zonos_embedding.pkl"
 
     if os.path.exists(cache_file):
-        print(f"\n[3/6] Loading cached speaker embedding from {cache_file}")
+        print(f"\n[3/7] Loading cached speaker embedding from {cache_file}")
         t0 = time.time()
         with open(cache_file, "rb") as f:
             speaker = pickle.load(f)
     else:
-        print(f"\n[3/6] Extracting speaker embedding...")
+        print(f"\n[3/7] Extracting speaker embedding...")
         t0 = time.time()
         speaker = model.make_speaker_embedding(wav, sampling_rate)
         with open(cache_file, "wb") as f:
@@ -142,25 +142,33 @@ def main():
         print(f"  -> Saved embedding to {cache_file}")
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
+    print(f"\n[4/7] Warming up (torch.compile JIT)...")
+    t0 = time.time()
+    dummy_cond = make_cond_dict(text="warmup", speaker=speaker, language="en-us")
+    dummy_conding = model.prepare_conditioning(dummy_cond)
+    with torch.no_grad():
+        _ = model.generate(dummy_conding, max_new_tokens=5, progress_bar=False)
+    print(f"  -> Done in {time.time()-t0:.1f}s")
+
     script_text = (
         "Diagnostics complete. The hyperdrive core is fully operational. "
         "All systems nominal. Awaiting further instructions."
     )
 
-    print(f"\n[4/6] Preparing conditioning...")
+    print(f"\n[5/7] Preparing conditioning...")
     print(f"       Script: \"{script_text[:60]}...\"")
     t0 = time.time()
     cond_dict = make_cond_dict(text=script_text, speaker=speaker, language="en-us")
     conditioning = model.prepare_conditioning(cond_dict)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\n[5/6] Generating speech...")
+    print(f"\n[6/7] Generating speech...")
     t0 = time.time()
     codes = model.generate(conditioning, max_new_tokens=200)
     gen_time = time.time()-t0
     print(f"  -> Generated {codes.shape[2]} tokens in {gen_time:.1f}s ({codes.shape[2]/gen_time:.1f} tokens/s)")
 
-    print(f"\n[6/6] Decoding and saving output...")
+    print(f"\n[7/7] Decoding and saving output...")
     t0 = time.time()
     wavs = model.autoencoder.decode(codes)
     torchaudio.save(OUTPUT_FILE, wavs[0].cpu(), model.autoencoder.sampling_rate)
