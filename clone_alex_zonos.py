@@ -11,7 +11,7 @@ def main():
     print("  Zonos v0.1 - Alex Voice Cloner")
     print("=" * 60)
 
-    REFERENCE_AUDIO = "alex_reference.wav"
+    REFERENCE_AUDIO = "49800b87-fe13-47ec-93bd-361e274c39fc.mp3"
     OUTPUT_FILE = "alex_zonos_output.wav"
 
     if not os.path.exists(REFERENCE_AUDIO):
@@ -29,10 +29,8 @@ def main():
     except ImportError:
         print("\n[ERROR] Required packages not installed.")
         print("Setup steps:")
-        print("  1. git clone https://github.com/Zyphra/Zonos.git")
-        print("  2. cd Zonos")
-        print("  3. uv sync")
-        print("  4. Run this script from inside the Zonos directory")
+        print("  1. Run setup_zonos.bat to clone and install Zonos")
+        print("  2. Then re-run this script")
         sys.exit(1)
 
     print(f"\n[1/5] Loading Zonos transformer model on {device}...")
@@ -59,7 +57,7 @@ def main():
     wavs = model.autoencoder.decode(codes)
 
     print(f"[5/5] Saving output to: {OUTPUT_FILE}")
-    torchaudio.save(OUTPUT_FILE, wavs_tensor=wavs[0].cpu(), sample_rate=model.autoencoder.sampling_rate)
+    torchaudio.save(OUTPUT_FILE, wavs[0].cpu(), model.autoencoder.sampling_rate)
 
     print(f"\nDone! Audio saved to: {os.path.abspath(OUTPUT_FILE)}")
     print("=" * 60)
