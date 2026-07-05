@@ -110,5 +110,8 @@ def main():
     print("=" * 60)
     sys.stdout.flush()
 
+    print("\nPlaying audio...")
+    os.startfile(os.path.abspath(OUTPUT_FILE))
+
 if __name__ == "__main__":
     main()
