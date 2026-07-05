@@ -118,8 +118,19 @@ def main():
     print(f"\n[2/5] Loading reference audio: {REFERENCE_AUDIO}")
     wav, sampling_rate = torchaudio.load(REFERENCE_AUDIO)
 
-    print("[3/5] Extracting speaker embedding...")
-    speaker = model.make_speaker_embedding(wav, sampling_rate)
+    import pickle
+    cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_zonos_embedding.pkl"
+
+    if os.path.exists(cache_file):
+        print(f"[3/5] Loading cached speaker embedding from {cache_file}")
+        with open(cache_file, "rb") as f:
+            speaker = pickle.load(f)
+    else:
+        print("[3/5] Extracting speaker embedding...")
+        speaker = model.make_speaker_embedding(wav, sampling_rate)
+        with open(cache_file, "wb") as f:
+            pickle.dump(speaker, f)
+        print(f"  -> Saved embedding to {cache_file}")
 
     script_text = (
         "Diagnostics complete. The hyperdrive core is fully operational. "
