@@ -12,8 +12,14 @@ def main():
     print("=" * 60)
     sys.stdout.flush()
 
-    REFERENCE_AUDIO = "49800b87-fe13-47ec-93bd-361e274c39fc.mp3"
-    OUTPUT_FILE = "alex_output.wav"
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    ROOT_DIR = os.path.dirname(SCRIPT_DIR)
+
+    REFERENCE_AUDIO = os.path.join(ROOT_DIR, "49800b87-fe13-47ec-93bd-361e274c39fc.mp3")
+    OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    OUTPUT_FILE = os.path.join(OUTPUT_DIR, "alex_output.wav")
 
     if not os.path.exists(REFERENCE_AUDIO):
         print(f"\n[ERROR] Reference audio not found: {REFERENCE_AUDIO}")
@@ -69,7 +75,7 @@ def main():
     sys.stdout.flush()
     t0 = time.time()
     import pickle
-    cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_embedding.pkl"
+    cache_file = os.path.join(OUTPUT_DIR, "speaker_embedding.pkl")
 
     if os.path.exists(cache_file):
         print(f"  -> Loading cached embedding from {cache_file}")

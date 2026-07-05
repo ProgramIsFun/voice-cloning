@@ -92,13 +92,19 @@ def main():
     print("  Zonos v0.1 - Alex Voice Cloner (English + Japanese)")
     print("=" * 60)
 
-    REFERENCE_AUDIO = "49800b87-fe13-47ec-93bd-361e274c39fc.mp3"
-    OUTPUT_FILE = "alex_zonos_output.wav"
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    REFERENCE_AUDIO = os.path.join(SCRIPT_DIR, "49800b87-fe13-47ec-93bd-361e274c39fc.mp3")
+    OUTPUT_DIR = os.path.join(SCRIPT_DIR, "zonos_output")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    OUTPUT_FILE = os.path.join(OUTPUT_DIR, "alex_zonos_output.wav")
+    OUTPUT_FILE_JA = os.path.join(OUTPUT_DIR, "alex_zonos_output_ja.wav")
 
     if not os.path.exists(REFERENCE_AUDIO):
         print(f"\n[ERROR] Reference audio not found: {REFERENCE_AUDIO}")
         print("Please place a clean 6-12 second clip of Alex's voice as:")
-        print(f"  -> {os.path.abspath(REFERENCE_AUDIO)}")
+        print(f"  -> {REFERENCE_AUDIO}")
         sys.exit(1)
 
     try:
@@ -126,7 +132,7 @@ def main():
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
     import pickle
-    cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_zonos_embedding.pkl"
+    cache_file = os.path.join(OUTPUT_DIR, "zonos_speaker_embedding.pkl")
 
     if os.path.exists(cache_file):
         print(f"\n[3/9] Loading cached speaker embedding from {cache_file}")
@@ -180,7 +186,6 @@ def main():
         "診断完了。ハイパードライブコアは完全に稼働している。"
         "全システム正常。さらなる指示を待っている。"
     )
-    OUTPUT_FILE_JA = "alex_zonos_output_ja.wav"
 
     print(f"\n[8/9] Preparing conditioning (Japanese)...")
     print(f"       Script: \"{script_text_ja}\"")

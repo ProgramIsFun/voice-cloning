@@ -1,17 +1,32 @@
 # Voice Cloning
 
-AI voice cloning using XTTS v2 (Coqui TTS) and Zonos v0.1 (Zyphra) with CUDA acceleration.
+AI voice cloning using XTTS v2 (Coqui TTS), Zonos v0.1 (Zyphra), and F5-TTS with CUDA acceleration.
 
 Clone any voice from just a few seconds of audio, running locally on your machine.
 
+## Project Structure
+
+```
+voice-cloning/
+├── 49800b87-...mp3          # Reference audio (shared)
+├── clone_zonos.py           # Zonos script (best quality, slow)
+├── zonos_output/            # Zonos output files
+├── xtts/                    # XTTS v2 (good quality, medium speed)
+│   ├── clone.py
+│   └── output/
+├── f5tts/                   # F5-TTS (good quality, fast) - coming soon
+│   └── output/
+├── Zonos/                   # Zonos library (git submodule)
+└── tts_benchmark.py         # Speed comparison script
+```
+
 ## Models
 
-| Model | Quality | Setup |
-|-------|---------|-------|
-| **Zonos v0.1** | Much better — more natural, expressive, and consistent | Docker (recommended) |
-| XTTS v2 | Good baseline | Direct pip install |
-
-Zonos produces significantly better results than XTTS — the cloned voice sounds more natural, has better prosody, and handles longer sentences with more consistent tone.
+| Model | Quality | Speed | Setup |
+|-------|---------|-------|-------|
+| **Zonos v0.1** | Best — most natural, expressive | Slow (~30s+) | Docker |
+| **F5-TTS** | Very good — fast + fine-tunable | Fast (real-time) | pip install |
+| **XTTS v2** | Good baseline | Medium | pip install |
 
 ## Features
 
@@ -19,10 +34,11 @@ Zonos produces significantly better results than XTTS — the cloned voice sound
 - CUDA acceleration
 - Speaker embedding caching (faster re-runs)
 - Auto-play generated audio
+- English + Japanese support (Zonos)
 
 ## Setup
 
-### Zonos (Docker) — Recommended
+### Zonos (Docker) — Best Quality
 
 ```powershell
 cd C:\Users\whouse\Desktop\ref\voice-cloning
@@ -34,6 +50,11 @@ Then run:
 docker compose up
 ```
 
+Or run directly:
+```powershell
+python clone_zonos.py
+```
+
 ### XTTS v2 (Direct)
 
 ```bash
@@ -43,15 +64,22 @@ pip install torch==2.5.1 torchaudio==2.5.1 --index-url https://download.pytorch.
 
 ```powershell
 set COQUI_TOS_AGREED=1
-py -3.11 clone_alex_xtts.py
+cd xtts
+py -3.11 clone.py
+```
+
+### F5-TTS (Coming Soon)
+
+```powershell
+cd f5tts
+py clone.py
 ```
 
 ## Usage
 
-1. Place a reference audio file (6-12 seconds of clean speech) in this folder
-2. Update `REFERENCE_AUDIO` filename in the script
-3. Run the appropriate command above
-4. Generated audio will be saved and auto-played
+1. Place a reference audio file (6-12 seconds of clean speech) in the root folder
+2. Run the appropriate model script
+3. Generated audio will be saved to the model's output folder
 
 ## Reference Audio
 
@@ -59,9 +87,9 @@ The source reference audio is `49800b87-fe13-47ec-93bd-361e274c39fc.mp3`, extrac
 
 ## Output
 
-- `alex_zonos_output.wav` — Zonos clone (English)
-- `alex_zonos_output_ja.wav` — Zonos clone (Japanese)
-- `alex_output.wav` — XTTS clone
+- `zonos_output/alex_zonos_output.wav` — Zonos clone (English)
+- `zonos_output/alex_zonos_output_ja.wav` — Zonos clone (Japanese)
+- `xtts/output/alex_output.wav` — XTTS clone
 
 ## Fast TTS Comparison
 
@@ -75,10 +103,12 @@ edge-tts (Microsoft) completes in ~3s total vs Zonos taking much longer.
 
 ## TODO
 
-- [ ] Improve generation speed (currently slow on consumer GPUs)
-- [ ] Improve Japanese voice clarity (currently lower quality than English)
+- [ ] Set up F5-TTS
+- [ ] Improve Zonos generation speed (currently slow on consumer GPUs)
+- [ ] Improve Zonos Japanese voice clarity (currently lower quality than English)
 
 ## License
 
 XTTS: Non-commercial use only (CPML license from Coqui).
 Zonos: Apache 2.0 license.
+F5-TTS: CC-BY-NC 4.0 license.
