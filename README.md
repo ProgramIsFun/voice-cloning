@@ -53,6 +53,10 @@ py -3.11 clone_alex_xtts.py
 3. Run the appropriate command above
 4. Generated audio will be saved and auto-played
 
+## Reference Audio
+
+The source reference audio is `49800b87-fe13-47ec-93bd-361e274c39fc.mp3`, extracted from the YouTube video *"Valerian and the City of a Thousand Planets | "Welcome" Clip | Own It Now"*.
+
 ## Output
 
 - `alex_zonos_output.wav` — Zonos clone (better quality)
