@@ -156,7 +156,7 @@ def main():
 
     print(f"\n[5/6] Generating speech...")
     t0 = time.time()
-    codes = model.generate(conditioning)
+    codes = model.generate(conditioning, max_new_tokens=200)
     gen_time = time.time()-t0
     print(f"  -> Generated {codes.shape[2]} tokens in {gen_time:.1f}s ({codes.shape[2]/gen_time:.1f} tokens/s)")
 
