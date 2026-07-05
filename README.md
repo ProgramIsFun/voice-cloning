@@ -59,8 +59,14 @@ The source reference audio is `49800b87-fe13-47ec-93bd-361e274c39fc.mp3`, extrac
 
 ## Output
 
-- `alex_zonos_output.wav` — Zonos clone (better quality)
+- `alex_zonos_output.wav` — Zonos clone (English)
+- `alex_zonos_output_ja.wav` — Zonos clone (Japanese)
 - `alex_output.wav` — XTTS clone
+
+## TODO
+
+- [ ] Improve generation speed (currently slow on consumer GPUs)
+- [ ] Improve Japanese voice clarity (currently lower quality than English)
 
 ## License
 

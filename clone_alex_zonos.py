@@ -89,7 +89,7 @@ def main():
     t_start = time.time()
 
     print("=" * 60)
-    print("  Zonos v0.1 - Alex Voice Cloner")
+    print("  Zonos v0.1 - Alex Voice Cloner (English + Japanese)")
     print("=" * 60)
 
     REFERENCE_AUDIO = "49800b87-fe13-47ec-93bd-361e274c39fc.mp3"
@@ -114,13 +114,13 @@ def main():
         print("  2. Then re-run this script")
         sys.exit(1)
 
-    print(f"\n[1/7] Loading Zonos transformer model on {device}...")
+    print(f"\n[1/9] Loading Zonos transformer model on {device}...")
     print("      (First run will download model weights from HuggingFace)")
     t0 = time.time()
     model = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\n[2/7] Loading reference audio: {REFERENCE_AUDIO}")
+    print(f"\n[2/9] Loading reference audio: {REFERENCE_AUDIO}")
     t0 = time.time()
     wav, sampling_rate = torchaudio.load(REFERENCE_AUDIO)
     print(f"  -> Done in {time.time()-t0:.1f}s")
@@ -129,12 +129,12 @@ def main():
     cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_zonos_embedding.pkl"
 
     if os.path.exists(cache_file):
-        print(f"\n[3/7] Loading cached speaker embedding from {cache_file}")
+        print(f"\n[3/9] Loading cached speaker embedding from {cache_file}")
         t0 = time.time()
         with open(cache_file, "rb") as f:
             speaker = pickle.load(f)
     else:
-        print(f"\n[3/7] Extracting speaker embedding...")
+        print(f"\n[3/9] Extracting speaker embedding...")
         t0 = time.time()
         speaker = model.make_speaker_embedding(wav, sampling_rate)
         with open(cache_file, "wb") as f:
@@ -142,44 +142,73 @@ def main():
         print(f"  -> Saved embedding to {cache_file}")
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\n[4/7] Warming up (torch.compile JIT)...")
+    print(f"\n[4/9] Warming up (torch.compile JIT)...")
     t0 = time.time()
     dummy_cond = make_cond_dict(text="warmup", speaker=speaker, language="en-us")
     dummy_conding = model.prepare_conditioning(dummy_cond)
     with torch.no_grad():
-        _ = model.generate(dummy_conding, max_new_tokens=5, progress_bar=False)
+        _ = model.generate(dummy_conding, max_new_tokens=200, progress_bar=False)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    script_text = (
+    # --- English generation ---
+    script_text_en = (
         "Diagnostics complete. The hyperdrive core is fully operational. "
         "All systems nominal. Awaiting further instructions."
     )
 
-    print(f"\n[5/7] Preparing conditioning...")
-    print(f"       Script: \"{script_text[:60]}...\"")
+    print(f"\n[5/9] Preparing conditioning (English)...")
+    print(f"       Script: \"{script_text_en[:60]}...\"")
     t0 = time.time()
-    cond_dict = make_cond_dict(text=script_text, speaker=speaker, language="en-us")
+    cond_dict = make_cond_dict(text=script_text_en, speaker=speaker, language="en-us")
     conditioning = model.prepare_conditioning(cond_dict)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\n[6/7] Generating speech...")
+    print(f"\n[6/9] Generating English speech...")
     t0 = time.time()
-    codes = model.generate(conditioning, max_new_tokens=200)
+    codes = model.generate(conditioning)
     gen_time = time.time()-t0
     print(f"  -> Generated {codes.shape[2]} tokens in {gen_time:.1f}s ({codes.shape[2]/gen_time:.1f} tokens/s)")
 
-    print(f"\n[7/7] Decoding and saving output...")
+    print(f"\n[7/9] Decoding and saving English output...")
     t0 = time.time()
     wavs = model.autoencoder.decode(codes)
     torchaudio.save(OUTPUT_FILE, wavs[0].cpu(), model.autoencoder.sampling_rate)
     print(f"  -> Done in {time.time()-t0:.1f}s")
 
-    print(f"\nDone! Audio saved to: {os.path.abspath(OUTPUT_FILE)}")
+    # --- Japanese generation ---
+    script_text_ja = (
+        "診断完了。ハイパードライブコアは完全に稼働している。"
+        "全システム正常。さらなる指示を待っている。"
+    )
+    OUTPUT_FILE_JA = "alex_zonos_output_ja.wav"
+
+    print(f"\n[8/9] Preparing conditioning (Japanese)...")
+    print(f"       Script: \"{script_text_ja}\"")
+    t0 = time.time()
+    cond_dict_ja = make_cond_dict(
+        text=script_text_ja, speaker=speaker, language="ja", speaking_rate=13.0
+    )
+    conditioning_ja = model.prepare_conditioning(cond_dict_ja)
+    print(f"  -> Done in {time.time()-t0:.1f}s")
+
+    print(f"\n[9/9] Generating and saving Japanese speech...")
+    t0 = time.time()
+    codes_ja = model.generate(conditioning_ja)
+    gen_time = time.time()-t0
+    print(f"  -> Generated {codes_ja.shape[2]} tokens in {gen_time:.1f}s ({codes_ja.shape[2]/gen_time:.1f} tokens/s)")
+
+    wavs_ja = model.autoencoder.decode(codes_ja)
+    torchaudio.save(OUTPUT_FILE_JA, wavs_ja[0].cpu(), model.autoencoder.sampling_rate)
+
+    print(f"\nDone! Audio saved to:")
+    print(f"  English: {os.path.abspath(OUTPUT_FILE)}")
+    print(f"  Japanese: {os.path.abspath(OUTPUT_FILE_JA)}")
     print(f"Total time: {time.time()-t_start:.1f}s")
     print("=" * 60)
 
     if sys.platform == "win32":
         os.startfile(os.path.abspath(OUTPUT_FILE))
+        os.startfile(os.path.abspath(OUTPUT_FILE_JA))
 
 if __name__ == "__main__":
     main()
