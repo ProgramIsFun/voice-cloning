@@ -68,18 +68,36 @@ def main():
     print(f"\n[STEP 5/7] Extracting voice fingerprint (speaker conditioning)...")
     sys.stdout.flush()
     t0 = time.time()
-    print("  -> This may take a while on CPU...")
+    import pickle
+    cache_file = os.path.splitext(REFERENCE_AUDIO)[0] + "_embedding.pkl"
+
+    if os.path.exists(cache_file):
+        print(f"  -> Loading cached embedding from {cache_file}")
+        with open(cache_file, "rb") as f:
+            gpt_cond_latent, speaker_embedding = pickle.load(f)
+    else:
+        print("  -> Extracting embedding from reference audio...")
+        gpt_cond_latent, speaker_embedding = tts.tts_model.get_conditioning_latents(audio_path=[REFERENCE_AUDIO])
+        with open(cache_file, "wb") as f:
+            pickle.dump((gpt_cond_latent, speaker_embedding), f)
+        print(f"  -> Saved embedding to {cache_file}")
+    print(f"  -> Done in {time.time()-t0:.1f}s")
+    sys.stdout.flush()
 
     print(f"\n[STEP 6/7] Generating speech...")
     sys.stdout.flush()
     print(f"  -> Script: \"{script_text[:60]}...\"")
     t0 = time.time()
-    tts.tts_to_file(
+
+    out = tts.tts_model.inference(
         text=script_text,
-        speaker_wav=REFERENCE_AUDIO,
         language="en",
-        file_path=OUTPUT_FILE,
+        gpt_cond_latent=gpt_cond_latent,
+        speaker_embedding=speaker_embedding,
     )
+
+    import torchaudio
+    torchaudio.save(OUTPUT_FILE, torch.tensor(out["wav"]).unsqueeze(0), 24000)
     print(f"  -> Speech generated in {time.time()-t0:.1f}s")
     sys.stdout.flush()
 
