@@ -1,0 +1,19 @@
+services:
+  zonos:
+    image: voice-cloning-zonos-base
+    build:
+      context: .
+      dockerfile: Dockerfile.zonos
+    container_name: zonos_voice_cloner
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - HF_HOME=/app/huggingface
+    volumes:
+      - ./:/app/voice-cloning
+      - zonos-cache:/app/huggingface
+    working_dir: /app/voice-cloning
+    command: ["python", "clone_alex_zonos.py"]
+
+volumes:
+  zonos-cache:

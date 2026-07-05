@@ -1,0 +1,13 @@
+FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
+RUN pip install uv
+
+RUN apt update && \
+    apt install -y espeak-ng git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clone Zonos and install
+RUN git clone https://github.com/Zyphra/Zonos.git /app/Zonos
+WORKDIR /app/Zonos
+RUN uv pip install --system -e . && uv pip install --system -e .[compile]
+
+WORKDIR /app/voice-cloning

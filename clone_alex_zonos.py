@@ -6,6 +6,84 @@ Uses Zyphra's Zonos for high-fidelity zero-shot voice cloning.
 import sys
 import os
 
+def patch_speaker_cloning():
+    """Patch zonos/speaker_cloning.py to fix CUDA device mismatch in MelSpectrogram."""
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("zonos.speaker_cloning")
+        if spec is None or spec.origin is None:
+            print("  -> Warning: Could not find zonos.speaker_cloning module")
+            return
+        path = spec.origin
+        with open(path, "r") as f:
+            lines = f.readlines()
+
+        new_lines = []
+        i = 0
+        patched_spk = False
+        patched_lda = False
+        while i < len(lines):
+            line = lines[i]
+
+            # Patch SpeakerEmbedding: remove with torch.device(device): and add self.to(device)
+            if "with torch.device(device):" in line and not patched_spk:
+                # Find the indent level of this line
+                indent = len(line) - len(line.lstrip())
+                inner_indent = indent + 4
+                i += 1
+                # Collect the indented block, dedent by one level
+                block_lines = []
+                while i < len(lines) and (
+                    lines[i].startswith(" " * inner_indent) or lines[i].strip() == ""
+                ):
+                    if lines[i].startswith(" " * inner_indent):
+                        block_lines.append(lines[i][4:])
+                    elif lines[i].strip() == "":
+                        block_lines.append(lines[i])
+                    else:
+                        break
+                    i += 1
+                new_lines.extend(block_lines)
+                new_lines.append(" " * indent + "self.to(device)\n")
+                patched_spk = True
+                continue
+
+            # Patch SpeakerEmbeddingLDA: remove with torch.device(device): wrapper
+            if "with torch.device(device):" in line and not patched_lda:
+                # Find the indent level of this line
+                indent = len(line) - len(line.lstrip())
+                inner_indent = indent + 4
+                i += 1
+                # Collect the indented block
+                block_lines = []
+                while i < len(lines) and lines[i].strip() != "" and (
+                    lines[i].startswith(" " * inner_indent) or lines[i].strip() == ""
+                ):
+                    # Remove one level of indentation
+                    if lines[i].startswith(" " * inner_indent):
+                        block_lines.append(lines[i][4:])
+                    else:
+                        block_lines.append(lines[i])
+                    i += 1
+                new_lines.extend(block_lines)
+                new_lines.append(" " * indent + "self.to(device)\n")
+                patched_lda = True
+                continue
+
+            new_lines.append(line)
+            i += 1
+
+        if patched_spk or patched_lda:
+            with open(path, "w") as f:
+                f.writelines(new_lines)
+            print(f"  -> Patched speaker_cloning.py (spk={patched_spk}, lda={patched_lda})")
+        else:
+            print("  -> speaker_cloning.py already patched or no changes needed")
+    except Exception as e:
+        print(f"  -> Warning: Could not patch speaker_cloning.py: {e}")
+
+patch_speaker_cloning()
+
 def main():
     print("=" * 60)
     print("  Zonos v0.1 - Alex Voice Cloner")
@@ -61,6 +139,9 @@ def main():
 
     print(f"\nDone! Audio saved to: {os.path.abspath(OUTPUT_FILE)}")
     print("=" * 60)
+
+    if sys.platform == "win32":
+        os.startfile(os.path.abspath(OUTPUT_FILE))
 
 if __name__ == "__main__":
     main()
