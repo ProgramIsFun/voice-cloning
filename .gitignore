@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Model files (too large for git)
+*.ckpt
+*.safetensors
+*.pth
+*.pt
+*.bin
+
+# Audio files (generated output)
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# TTS cache
+.tts/
+home/
+!home/.gitkeep
+
+# Logs
+*.log
