@@ -77,7 +77,7 @@ def main():
             gpt_cond_latent, speaker_embedding = pickle.load(f)
     else:
         print("  -> Extracting embedding from reference audio...")
-        gpt_cond_latent, speaker_embedding = tts.tts_model.get_conditioning_latents(audio_path=[REFERENCE_AUDIO])
+        gpt_cond_latent, speaker_embedding = tts.synthesizer.tts_model.get_conditioning_latents(audio_path=[REFERENCE_AUDIO])
         with open(cache_file, "wb") as f:
             pickle.dump((gpt_cond_latent, speaker_embedding), f)
         print(f"  -> Saved embedding to {cache_file}")
@@ -89,7 +89,7 @@ def main():
     print(f"  -> Script: \"{script_text[:60]}...\"")
     t0 = time.time()
 
-    out = tts.tts_model.inference(
+    out = tts.synthesizer.tts_model.inference(
         text=script_text,
         language="en",
         gpt_cond_latent=gpt_cond_latent,
