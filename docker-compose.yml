@@ -13,7 +13,7 @@ services:
       - ./:/app/voice-cloning
       - zonos-cache:/app/huggingface
     working_dir: /app/voice-cloning
-    command: ["python", "clone_alex_zonos.py"]
+    command: ["python", "clone_zonos.py"]
 
 volumes:
   zonos-cache:
